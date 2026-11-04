@@ -11,7 +11,7 @@ int main() {
      void* arena_buffer = malloc(arena_max_size);
      auto arena = init_arena(arena_max_size, arena_buffer); 
 
-     int* p1 = arena_alloc(&arena, 10 * sizeof(int), &err);
+     int* p1 = arena_alloc_aligned(&arena, 10 * sizeof(int), alignof(int), &err);
 
      for (int i = 0; i < 10; i++) {
           p1[i] = i;

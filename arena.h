@@ -2,66 +2,67 @@
 #include "stdlib.h"
 
 typedef struct {
-     size_t max_size;
-     size_t capacity;
      void* buffer;
+     size_t capacity;
+     size_t length;
 } Arena;
 
-Arena init_arena(size_t max_size, void* buffer);
-void destroy_arena(Arena* self);
-void* arena_alloc(Arena* self, size_t bytes, bool* err);
-void* arena_alloc_aligned(Arena* self, size_t bytes, size_t alignment, bool* err);
+Arena initArena(size_t max_size, void* buffer);
+void destroyArena(Arena* self);
+void* arena_allocate(Arena* self, size_t bytes, bool* error);
+void* arena_allocateAligned(Arena* self, size_t bytes, size_t alignment, bool* error);
 void arena_reset(Arena* arena);
 
 #ifdef USING_ARENA
 
-Arena init_arena(size_t max_size, void* buffer) {
+Arena initArena(size_t max_size, void* buffer) {
      return (Arena) {
-          .max_size = max_size,
-          .capacity = 0,
+          .capacity = max_size,
+          .length = 0,
           .buffer = buffer
      };
 }
 
-void* arena_alloc(Arena* self, size_t bytes, bool* err) {
-     auto pointer = self->buffer + self->capacity;
-     self->capacity += bytes; if (self->capacity >= self->max_size) {
-          *err = true;
+void* arena_allocate(Arena* self, size_t bytes, bool* error) {
+     auto pointer = self->buffer + self->length;
+     self->length += bytes; if (self->length >= self->capacity) {
+          *error = true;
           return NULL;
      }
      else {
-          *err = false;
+          *error = false;
      }
 
      return pointer;
 }
 
-void* arena_alloc_aligned(Arena* self, size_t bytes, size_t alignment, bool* err) {
-     auto pointer = self->buffer + self->capacity;
-     self->capacity += bytes; 
+void* arena_allocateAligned(Arena* self, size_t bytes, size_t alignment, bool* error) {
+     auto pointer = self->buffer + self->length;
+     self->length += bytes; 
 
      if (alignment == 0 && alignment % 2 == 1) {
-          *err = true;
+          *error = true;
           return NULL;
      }
 
-     const auto padding = bytes % alignment;
+     auto padding = bytes % alignment;
      pointer += padding;
-     self->capacity += padding;
+     self->length += padding;
 
-     if (self->capacity >= self->max_size) {
-          *err = true;
+     if (self->length >= self->capacity) {
+          *error = true;
           return NULL;
      }
      else {
-          *err = false;
+          *error = false;
      }
 
      return pointer;
 }
 
 void arena_reset(Arena* self) {
-     self->capacity = 0;
+     self->length = 0;
 }
 
 #endif
+

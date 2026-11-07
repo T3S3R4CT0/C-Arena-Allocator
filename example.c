@@ -4,25 +4,38 @@
 #include "string.h"
 #include "stdio.h"
 
-const int arena_max_size = 1024 * 1024;
+const int arenaMaxSize = 1024 * 1024 * 1024;
 
 int main() {
-     bool err;
-     void* arena_buffer = malloc(arena_max_size);
-     auto arena = init_arena(arena_max_size, arena_buffer); 
+     bool error;
+     auto arenaBuffer = malloc(arenaMaxSize);
 
-     int* p1 = arena_alloc_aligned(&arena, 10 * sizeof(int), alignof(int), &err);
+     auto arena = initArena(arenaMaxSize, arenaBuffer);
 
-     for (int i = 0; i < 10; i++) {
-          p1[i] = i;
-          printf("%d\n", p1[i]);
+     int* p1 = arena_allocateAligned(&arena, 100 * sizeof(int), alignof(int), &error);
+     float* p2 = arena_allocateAligned(&arena, 69 * sizeof(float), alignof(float), &error);
+     
+     for (int i = 0; i < 100; i++) {
+          p1[i] = i * 2;
+          printf("p1[%d] = %d\n", i, p1[i]);
      }
+
+     for (int i = 0; i< 69; i++) {
+          p2[i] = i / 1.5 * i;
+          printf("p2[%d] = %f\n", i, p2[i]);
+     }
+
+     arena_reset(&arena);
      
-     auto len = strlen("hello world");
-     char* string = arena_alloc(&arena, len, &err);
-     strncpy(string, "hello world", len);
-     printf("%s\n", string);
-     
-     free(arena_buffer);
+     size_t length = strlen("hello world");
+     char* p3 = arena_allocate(&arena, length, &error); if (error) {
+          fprintf(stderr, "Error at allocating string\n");
+          return 1;
+     }
+     strncpy(p3, "hello world", length);
+
+     printf("p3 = %s", p3);
+
+     free(arenaBuffer);
      return 0;
 }

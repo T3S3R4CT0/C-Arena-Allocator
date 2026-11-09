@@ -7,13 +7,15 @@
 const int arenaMaxSize = 1024 * 1024 * 1024;
 
 int main() {
-     bool error;
+     bool status;
+     char errorBuffer[1024];
+
      auto arenaBuffer = malloc(arenaMaxSize);
 
      auto arena = initArena(arenaMaxSize, arenaBuffer);
 
-     int* p1 = arena_allocateAligned(&arena, 100 * sizeof(int), alignof(int), &error);
-     float* p2 = arena_allocateAligned(&arena, 69 * sizeof(float), alignof(float), &error);
+     int* p1 = arena_allocateAligned(&arena, 100 * sizeof(int), alignof(int), &status, errorBuffer);
+     float* p2 = arena_allocateAligned(&arena, 69 * sizeof(float), alignof(float), &status, errorBuffer);
      
      for (int i = 0; i < 100; i++) {
           p1[i] = i * 2;
@@ -28,7 +30,7 @@ int main() {
      arena_reset(&arena);
      
      size_t length = strlen("hello world");
-     char* p3 = arena_allocate(&arena, length, &error); if (error) {
+     char* p3 = arena_allocate(&arena, length, &status, errorBuffer); if (status) {
           fprintf(stderr, "Error at allocating string\n");
           return 1;
      }
